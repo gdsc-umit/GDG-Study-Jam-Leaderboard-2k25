@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google Study Jam Leaderboard – GDG on Campus UMIT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root {
+  --bg:#0f1724;
+  --muted:#94a3b8;
+  --gdg-blue:#4285F4;
+  --gdg-red:#EA4335;
+  --gdg-green:#34A853;
+  --gdg-yellow:#FBBC05;
+  --accent:linear-gradient(90deg,var(--gdg-blue),var(--gdg-green),var(--gdg-yellow),var(--gdg-red));
+}
+body {
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#071128;
+  color:#e6eef8;
+  padding:24px;
+  overflow-x:hidden;
+}
+.container {
+  max-width:1100px;
+  margin:0 auto;
+}
+header {
+  text-align:center;
+  margin-bottom:24px;
+  position:relative;
+}
+header h1 {
+  font-size:48px;
+  background:var(--accent);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-weight:800;
+  margin:0;
+}
+header p {
+  color:var(--muted);
+  font-size:16px;
+  margin-top:8px;
+}
+#congrats {
+  font-size:32px;
+  font-weight:800;
+  text-align:center;
+  margin-bottom:10px;
+  background:var(--accent);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation: pop 1.5s ease;
+}
+@keyframes pop {
+  0% { transform:scale(0.5); opacity:0; }
+  100% { transform:scale(1); opacity:1; }
+}
+.controls {
+  margin:20px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+}
+input,select,button {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  color:#e6eef8;
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:14px;
+}
+button {
+  cursor:pointer;
+  background:var(--accent);
+  border:none;
+  color:#061122;
+  font-weight:700;
+}
+.cards {
+  display:grid;
+  gap:14px;
+  grid-template-columns:1fr;
+}
+@media(min-width:720px) {
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media(min-width:980px) {
+  .cards { grid-template-columns:1fr 1fr 1fr; }
+}
+.card {
+  background:rgba(255,255,255,0.04);
+  border-radius:14px;
+  padding:14px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  transition:all .2s ease;
+}
+.card:hover {
+  transform:translateY(-3px);
+  background:rgba(255,255,255,0.07);
+}
+.avatar {
+  width:55px;
+  height:55px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  font-weight:700;
+  font-size:18px;
+  color:#061122;
+}
+.name {
+  font-weight:700;
+  font-size:16px;
+}
+.meta {
+  color:var(--muted);
+  font-size:13px;
+}
+.no-results {
+  color:var(--muted);
+  padding:20px;
+  text-align:center;
+}
+footer {
+  margin-top:32px;
+  color:var(--muted);
+  font-size:13px;
+  text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div id="congrats">🎉 Congratulations to all achievers! 🎉</div>
+    <h1>Google Cloud Study Jams 2025 Leaderboard</h1>
+    <p>GDG on Campus UMIT • 2025-2026</p>
+  </header>
+
+  <section class="controls">
+    <input id="search" placeholder="Search by name or branchYear...">
+    <select id="filterType">
+      <option value="">All Participants</option>
+      <option value="19 Badges">19 Badges</option>
+      <option value="Arcade Game">Arcade Game</option>
+    </select>
+    <button id="reset">Reset</button>
+  </section>
+
+  <main>
+    <div id="cards" class="cards"></div>
+  </main>
+
+  <footer>Made with by Divya Gurav 💟</footer>
+</div>
+
+<script>
+// 🎊 Confetti Blast at Start
+function launchConfetti() {
+  const duration = 2 * 1000;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    confetti({
+      particleCount: 4,
+      angle: 60,
+      spread: 70,
+      origin: { x: 0 },
+    });
+    confetti({
+      particleCount: 4,
+      angle: 120,
+      spread: 70,
+      origin: { x: 1 },
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+launchConfetti();
+
+let participants = [];
+
+// ✅ Use your Google Sheet ID and Sheet Name
+const SHEET_ID = "1QvZMz72QfvGKskO6mImJ6SbsC74W8A-RW3TNFyvJlts";
+const SHEET_NAME = "Sheet1";
+const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/${SHEET_NAME}`;
+
+fetch(API_URL)
+  .then(res => res.json())
+  .then(data => {
+    participants = data.map(row => {
+      const name = row["User Name"]?.trim() || "Unknown";
+      const branchYear = row["BranchYear"]?.trim() || "Unknown";
+      const badges = parseInt(row["No of Badges Completed"] || 0);
+      const games = parseInt(row["# of Arcade Games Completed"] || 0);
+      const types = [];
+      if (badges >= 19) types.push("19 Badges");
+      if (games > 0) types.push("Arcade Game");
+      const badgeType = types.join(", ") || "Other";
+      return {
+        name,
+        branchYear,
+        badgeType,
+        hasBadges: badges >= 19,
+        hasArcade: games > 0
+      };
+    });
+    renderList();
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("cards").innerHTML =
+      `<div class="no-results">⚠️ Error loading data. Make sure the Google Sheet is public.</div>`;
+  });
+
+const searchEl = document.getElementById("search");
+const filterEl = document.getElementById("filterType");
+const resetEl = document.getElementById("reset");
+const cardsEl = document.getElementById("cards");
+
+function initials(name) {
+  return name.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase();
+}
+function avatarColor(name) {
+  const colors = ['#FCE8E6','#E8F3FF','#E8FFF0','#FFF7DE','#F0E8FF'];
+  let sum = 0;
+  for (let i=0; i<name.length; i++) sum += name.charCodeAt(i);
+  return colors[sum % colors.length];
+}
+
+function renderList() {
+  const q = searchEl.value.trim().toLowerCase();
+  const filter = filterEl.value;
+  let filtered = participants.filter(p => {
+    const matchQ = p.name.toLowerCase().includes(q) || p.branchYear.toLowerCase().includes(q);
+    const matchF =
+      filter === "19 Badges" ? p.hasBadges :
+      filter === "Arcade Game" ? p.hasArcade :
+      true;
+    return matchQ && matchF;
+  });
+
+  if (!filtered.length) {
+    cardsEl.innerHTML = `<div class="no-results">No participants found</div>`;
+    return;
+  }
+
+  cardsEl.innerHTML = filtered.map(p => `
+    <div class="card">
+      <div class="avatar" style="background:${avatarColor(p.name)}">${initials(p.name)}</div>
+      <div>
+        <div class="name">${p.name}</div>
+        <div class="meta">${p.branchYear} • ${p.badgeType}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+searchEl.addEventListener("input", debounce(renderList,150));
+filterEl.addEventListener("change", renderList);
+resetEl.addEventListener("click", () => {
+  searchEl.value="";
+  filterEl.value="";
+  renderList();
+});
+
+function debounce(fn, wait) {
+  let t;
+  return (...a) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...a), wait);
+  };
+}
+</script>
+</body>
+</html>
