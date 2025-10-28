@@ -1,0 +1,27 @@
+name: 🔄 Instant Sync Fork from Main Repo
+
+on:
+  workflow_dispatch:      # Allows you to run manually anytime
+  repository_dispatch:    # Allows instant trigger from upstream push event
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync from upstream (Diya411 repo)
+        run: |
+          git remote add upstream https://github.com/Diya411/GDG-Study-Jam-Leaderboard-2k25.git
+          git fetch upstream
+          git checkout main
+          git merge upstream/main --allow-unrelated-histories -m "🔄 Auto-sync from upstream"
+          git push origin main
