@@ -9,9 +9,7 @@ This website showcases top performers and completers with real-time updates dire
 
 ## 🌐 Live Leaderboard
 
-👉 **Visit Here:** [https://yourusername.github.io/gdg-study-jam-leaderboard](https://yourusername.github.io/gdg-study-jam-leaderboard)  
-*(Replace with your actual hosted URL — GitHub Pages, Netlify, or Vercel)*
-
+👉 **Visit Here:** [https://diya411.github.io/GDG-Study-Jam-Leaderboard-2k25/](https://diya411.github.io/GDG-Study-Jam-Leaderboard-2k25/)  
 ---
 
 ## ✨ Overview
@@ -45,15 +43,6 @@ https://docs.google.com/spreadsheets/d/e/2PACX-1vQAcdZB3LgwwbWxwWkFLVohnNT0ZRKcb
 ✅ Auto-refreshes when Google Sheet is updated  
 ✅ Celebration confetti animation on page load  
 ✅ Built with pure HTML, CSS, and JavaScript — no frameworks
-
----
-
-## 🧭 Deployment Options
-
-Host this site easily for free:
-- **GitHub Pages** → Settings → Pages → Deploy from branch  
-- **Netlify** → [app.netlify.com/drop](https://app.netlify.com/drop) (drag & drop folder)  
-- **Vercel** → Import GitHub repo
 
 ---
 
